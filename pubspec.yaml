@@ -61,7 +61,7 @@ flutter:
 
 
   assets:
-    - assets/iddsi.logo.jpeg
+    - assets/iddsi-logo.jpeg
     - assets/speech.logo.png
     - assets/background_img.png
 
