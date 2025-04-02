@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_svg: ^2.0.9
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -61,9 +62,16 @@ flutter:
 
 
   assets:
-    - assets/iddsi-logo.jpeg
+    - assets/iddsi-logo.png
     - assets/speech.logo.png
-    - assets/background_img.png
+    - assets/background.png
+    - assets/menu_icon.svg
+    - assets/x_icon.svg
+    - assets/arrow_icon.svg
+    - assets/info_icon.svg
+    - assets/dysphagia_icon.svg
+    - assets/symptoms_icon.svg
+    - assets/disclaimer_icon.svg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
