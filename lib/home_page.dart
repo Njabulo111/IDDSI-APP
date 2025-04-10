@@ -90,7 +90,7 @@ class _IDDSIHomePageState extends State<IDDSIHomePage> {
                   print('Error loading background image: $error');
                   return Container(
                     color: Colors.grey[200], // Show a grey background if image fails
-                    child: Center(
+                    child: const Center(
                       child: Text('Image load failed'),
                     ),
                   );
@@ -320,13 +320,13 @@ class _IDDSIHomePageState extends State<IDDSIHomePage> {
                           child: Row(
                             children: [
                               SvgPicture.asset(selectedMenuItemSvgPath!),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
                                 selectedMenuItemTitle!,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               SvgPicture.asset(selectedMenuItemArrowPath!),
                             ],
                           ),
