@@ -60,11 +60,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final blue = const Color(0xFF0D47A1);
+    const blue = Color(0xFF0D47A1);
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/background.png'), // Replace with your background image
             fit: BoxFit.cover, // Adjust the image's fit
