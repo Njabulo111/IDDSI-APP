@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'menu_item.dart';
-
+import 'chatbot.dart'; // Import the chatbot page
+ 
 class IDDSIHomePage extends StatefulWidget {
   const IDDSIHomePage({super.key});
-
+ 
   @override
   _IDDSIHomePageState createState() => _IDDSIHomePageState();
 }
-
+ 
 class _IDDSIHomePageState extends State<IDDSIHomePage> {
   bool isMenuOpen = false;
+  bool showDisclaimer = true; // Flag for showing the disclaimer
+ 
+  // Define these variables as class members
   String? selectedMenuItemTitle;
   String selectedMenuItemContent = '';
   String? selectedMenuItemSvgPath;
   String? selectedMenuItemArrowPath;
-
+ 
   void toggleMenu() {
     setState(() {
       isMenuOpen = !isMenuOpen;
@@ -27,29 +30,42 @@ class _IDDSIHomePageState extends State<IDDSIHomePage> {
       }
     });
   }
-
-  void selectMenuItem(String title, String content, String svgPath, String arrowPath) {
+ 
+  void _closeDisclaimer() {
     setState(() {
-      if (selectedMenuItemTitle == title) {
-        selectedMenuItemTitle = null;
-        selectedMenuItemContent = '';
-        selectedMenuItemSvgPath = null;
-        selectedMenuItemArrowPath = null;
-      } else {
-        selectedMenuItemTitle = title;
-        selectedMenuItemContent = content;
-        selectedMenuItemSvgPath = svgPath;
-        selectedMenuItemArrowPath = arrowPath;
-      }
-      isMenuOpen = true;
+      showDisclaimer = false;
     });
   }
-
+ 
+  // Implementation of the _showDisclaimer method
+  void _showDisclaimer() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Disclaimer'),
+          content: const Text(
+            'This application is intended as a guide only and should not replace professional medical advice. '
+            'Always consult with healthcare professionals for specific dietary and swallowing recommendations.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+ 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final appBarHeight = AppBar().preferredSize.height;
-
+ 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -80,7 +96,7 @@ class _IDDSIHomePageState extends State<IDDSIHomePage> {
       ),
       body: Stack(
         children: [
-          // Home Page Background (using FittedBox and errorBuilder)
+          // Home Page Background
           Positioned.fill(
             child: FittedBox(
               fit: BoxFit.cover,
@@ -89,7 +105,7 @@ class _IDDSIHomePageState extends State<IDDSIHomePage> {
                 errorBuilder: (context, error, stackTrace) {
                   print('Error loading background image: $error');
                   return Container(
-                    color: Colors.grey[200], // Show a grey background if image fails
+                    color: Colors.grey[200],
                     child: const Center(
                       child: Text('Image load failed'),
                     ),
@@ -114,7 +130,8 @@ class _IDDSIHomePageState extends State<IDDSIHomePage> {
                 ),
                 const SizedBox(height: 20),
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 15),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 15),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.85),
                     borderRadius: BorderRadius.circular(8),
@@ -154,6 +171,7 @@ class _IDDSIHomePageState extends State<IDDSIHomePage> {
                     ),
                     onPressed: () {
                       // Continue button functionality
+                      _closeDisclaimer();
                     },
                     child: const Text(
                       'CONTINUE',
@@ -162,181 +180,56 @@ class _IDDSIHomePageState extends State<IDDSIHomePage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/therapist-login');
-                    },
-                    child: const Text(
-                      'Therapist Login',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF1F41BB),
-                        decoration: TextDecoration.underline,
+                // Disclaimer Button
+                if (showDisclaimer)
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: TextButton(
+                      onPressed: _showDisclaimer,
+                      child: const Text(
+                        'Disclaimer',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF1F41BB),
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
-          // Side Menu - Adjusted to slide in from the left
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 300),
-            left: isMenuOpen ? 0 : -screenSize.width * 0.7,
-            top: 0,
-            child: Container(
-              width: screenSize.width * 0.7,
-              height: screenSize.height,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.97),
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+ 
+          // Chat button as a direct child of the Stack
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChatbotPage()),
+                );
+              },
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.blueAccent,
+                  shape: BoxShape.circle,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                    offset: const Offset(3, 0),
+                padding: const EdgeInsets.all(15),
+                child: const Text(
+                  'Let us chat',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
+                ),
               ),
-              child: selectedMenuItemTitle == null
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Align(
-                            alignment: Alignment.topRight,
-                            child: IconButton(
-                              icon: SvgPicture.asset(
-                                'assets/x_icon.svg',
-                                width: 24,
-                                height: 24,
-                              ),
-                              onPressed: toggleMenu,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                MenuItem(
-                                  title: "What is the IDDSI",
-                                  svgPath: 'assets/info_icon.svg',
-                                  arrowPath: 'assets/arrow_icon.svg',
-                                  onTap: () {
-                                    selectMenuItem("What is the IDDSI",
-                                        "Information about IDDSI", 'assets/info_icon.svg', 'assets/arrow_icon.svg');
-                                  },
-                                ),
-                                const Divider(height: 1, thickness: 0.5),
-                                MenuItem(
-                                  title: "What is Dysphagia",
-                                  svgPath: 'assets/dysphagia_icon.svg',
-                                  arrowPath: 'assets/arrow_icon.svg',
-                                  onTap: () {
-                                    selectMenuItem("What is Dysphagia",
-                                        "Information about Dysphagia", 'assets/dysphagia_icon.svg', 'assets/arrow_icon.svg');
-                                  },
-                                ),
-                                const Divider(height: 1, thickness: 0.5),
-                                MenuItem(
-                                  title: "Signs and Symptoms",
-                                  svgPath: 'assets/symptoms_icon.svg',
-                                  arrowPath: 'assets/arrow_icon.svg',
-                                  onTap: () {
-                                    selectMenuItem("Signs and Symptoms",
-                                        "Information about Signs and Symptoms", 'assets/symptoms_icon.svg', 'assets/arrow_icon.svg');
-                                  },
-                                ),
-                                const Divider(height: 1, thickness: 0.5),
-                                MenuItem(
-                                  title: "Disclaimer",
-                                  svgPath: 'assets/disclaimer_icon.svg',
-                                  arrowPath: 'assets/arrow_icon.svg',
-                                  onTap: () {
-                                    selectMenuItem("Disclaimer",
-                                        "Information about Disclaimer", 'assets/disclaimer_icon.svg', 'assets/arrow_icon.svg');
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          child: Center(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1F41BB),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 40, vertical: 15),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                elevation: 4,
-                              ),
-                              onPressed: () {
-                                // Contact us functionality
-                              },
-                              child: const Text(
-                                'Contact Us',
-                                style: TextStyle(color: Colors.white, fontSize: 16),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Align(
-                            alignment: Alignment.topRight,
-                            child: IconButton(
-                              icon: SvgPicture.asset(
-                                'assets/x_icon.svg',
-                                width: 24,
-                                height: 24,
-                              ),
-                              onPressed: toggleMenu,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Row(
-                            children: [
-                              SvgPicture.asset(selectedMenuItemSvgPath!),
-                              const SizedBox(width: 8),
-                              Text(
-                                selectedMenuItemTitle!,
-                                style: const TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold),
-                              ),
-                              const Spacer(),
-                              SvgPicture.asset(selectedMenuItemArrowPath!),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Text(selectedMenuItemContent),
-                        ),
-                      ],
-                    ),
             ),
           ),
         ],
@@ -344,3 +237,5 @@ class _IDDSIHomePageState extends State<IDDSIHomePage> {
     );
   }
 }
+ 
+ 
