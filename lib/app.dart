@@ -61,7 +61,7 @@ class IDDSIApp extends StatelessWidget {
         ),
         '/signin': (context) => const LoginPage(), // Link to SignInPage
         '/register': (context) => const RegisterPage(),
-        '/forgotpassword': (context) => const ForgotPasswordPage(),
+        '/forgotPassword': (context) => const ForgotPasswordPage(), // Updated route name to match usage in sign-in page
         '/home': (context) => const IDDSIHomePage(),
       },
     );

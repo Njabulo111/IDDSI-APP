@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -17,8 +18,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _isLoading = false;
   String _errorMessage = '';
-
-  final String _registerUrl = 'https://yourapi.com/register'; // Replace with your real API
+  final String _registerUrl =
+      'https://ujprojectiddsi-daakdjchhecydbew.canadacentral-01.azurewebsites.net/api/Auth/Register';
 
   void _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
@@ -32,38 +33,61 @@ class _RegisterPageState extends State<RegisterPage> {
     final password = _passwordController.text.trim();
 
     try {
-      final response = await http.post(
-        Uri.parse(_registerUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
-      );
+      final response = await http
+          .post(
+            Uri.parse(_registerUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'email': email,
+              'password': password,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
-      if (response.statusCode == 200) {
-        // Registration successful
+      print('STATUS: ${response.statusCode}');
+      print('BODY: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account created successfully!')),
         );
         Navigator.pushReplacementNamed(context, '/login');
       } else if (response.statusCode == 409) {
-        // Email already exists (Conflict)
         setState(() {
           _errorMessage = 'Account already exists. Please sign in.';
         });
       } else {
-        // Other errors
+        final body = jsonDecode(response.body);
         setState(() {
-          _errorMessage = 'Something went wrong. Please try again.';
+          _errorMessage = body['message'] ?? 'Something went wrong.';
         });
       }
-    } catch (e) {
+    } on TimeoutException catch (e) {
+      print('Timeout error: $e');
       setState(() {
-        _errorMessage = 'Failed to connect. Check your internet.';
+        _errorMessage = 'Connection timed out. Please try again later.';
+      });
+    } catch (e) {
+      print('HTTP ERROR: $e');
+      setState(() {
+        _errorMessage = 'Failed to connect. Please try again later.';
       });
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) return 'Enter password';
+    if (value.length < 8) return 'Min 8 characters required';
+    final regex =
+        RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$');
+    if (!regex.hasMatch(value)) {
+      return 'Use upper, number & symbol';
+    }
+    return null;
   }
 
   @override
@@ -79,130 +103,140 @@ class _RegisterPageState extends State<RegisterPage> {
     const blue = Color(0xFF0D47A1);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/background.jpg'), // Replace with your background image
-            fit: BoxFit.cover, // Adjust the image's fit
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const Text(
-                      'Create Account',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0D47A1),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Create an account here to start\nusing the app.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 30),
-
-                    if (_errorMessage.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _errorMessage,
-                          style: TextStyle(color: Colors.red.shade800),
-                        ),
-                      ),
-
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: _inputDecoration('Email'),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Enter email';
-                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                          return 'Enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: _inputDecoration('Password'),
-                      validator: (value) {
-                        if (value == null || value.length < 6) {
-                          return 'Min 6 characters required';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _confirmController,
-                      obscureText: true,
-                      decoration: _inputDecoration('Confirm Password'),
-                      validator: (value) {
-                        if (value != _passwordController.text) {
-                          return 'Passwords do not match';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 30),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: blue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/background.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Create Account',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: blue,
                           ),
                         ),
-                        child: _isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text(
-                                'Sign up',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/login');
-                      },
-                      child: Text(
-                        'Already have an account',
-                        style: TextStyle(
-                          color: blue,
-                          decoration: TextDecoration.underline,
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Create an account here to start\nusing the app.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16),
                         ),
-                      ),
+                        const SizedBox(height: 30),
+                        if (_errorMessage.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              _errorMessage,
+                              style: TextStyle(color: Colors.red.shade800),
+                            ),
+                          ),
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: _inputDecoration('Email'),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Enter email';
+                            }
+                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                              return 'Enter a valid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: _inputDecoration('Password'),
+                          validator: _validatePassword,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _confirmController,
+                          obscureText: true,
+                          decoration: _inputDecoration('Confirm Password'),
+                          validator: (value) {
+                            if (value != _passwordController.text) {
+                              return 'Passwords do not match';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 30),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _submitForm,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: blue,
+                              side: const BorderSide(color: blue, width: 2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 4,
+                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    color: blue,
+                                  )
+                                : const Text(
+                                    'Sign up',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushReplacementNamed(context, '/login');
+                          },
+                          child: const Text(
+                            'Already have an account',
+                            style: TextStyle(
+                              color: blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
       ),
     );
   }
