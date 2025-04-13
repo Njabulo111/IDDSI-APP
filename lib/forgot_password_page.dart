@@ -124,7 +124,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final blue = const Color(0xFF1F41BB); // Matches the blue in the image
+    const blue = Color(0xFF1F41BB); // Matches the blue in the image
 
     return Scaffold(
       body: Stack(

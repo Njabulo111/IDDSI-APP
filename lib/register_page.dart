@@ -29,8 +29,9 @@ class _RegisterPageState extends State<RegisterPage> {
       _errorMessage = '';
     });
 
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+    final email = "twarisaninxumza@gmail.com";
+final password ="twari@12345";
+    
 
     try {
       final response = await http
