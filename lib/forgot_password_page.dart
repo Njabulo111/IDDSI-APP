@@ -153,7 +153,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
+                        const Text(
                           'Forgot Password',
                           style: TextStyle(
                             fontSize: 40,
@@ -264,7 +264,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           onPressed: () {
                             Navigator.pushReplacementNamed(context, '/register');
                           },
-                          child: Text(
+                          child: const Text(
                             'Create an account',
                             style: TextStyle(
                               color: blue,
