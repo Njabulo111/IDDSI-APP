@@ -324,8 +324,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               fontSize: regularFontSize,
                               color: Colors.black87,
                             ),
-                            children: [
-                              const TextSpan(text: 'Already have an account? '),
+                            children: const [
+                              TextSpan(text: 'Already have an account? '),
                               TextSpan(
                                 text: 'Sign In',
                                 style: TextStyle(

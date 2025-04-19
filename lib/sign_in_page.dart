@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   final FocusNode _passwordFocus = FocusNode();
 
   bool _isValidEmail(String value) {
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}\$');
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     return emailRegex.hasMatch(value);
   }
 
@@ -41,6 +39,14 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
+    // Bypassing login request for development
+    await Future.delayed(const Duration(seconds: 1)); // simulate delay
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+
+    /*
+    // ORIGINAL LOGIN LOGIC - Temporarily disabled
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -56,7 +62,6 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        // You can store token/session data here
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/home');
         }
@@ -79,6 +84,7 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = false;
       });
     }
+    */
   }
 
   void _togglePasswordVisibility() {
@@ -114,13 +120,13 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/background.png', 
+              'assets/background.png',
               fit: BoxFit.cover,
             ),
           ),
           Positioned.fill(
             child: Container(
-              color: Colors.blue.shade50.withOpacity(0.8), // Adjust opacity to let background shine through
+              color: Colors.blue.shade50.withOpacity(0.8),
             ),
           ),
           SafeArea(
