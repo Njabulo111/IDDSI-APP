@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart'; // Firebase import
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -16,63 +15,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   String _message = '';
   bool _isEmailValid = true;
 
-  final String _forgotPasswordUrl = 
-    'https://ujprojectiddsi-daakdjchhecydbew.canadacentral-01.azurewebsites.net/api/Auth/ForgotPassword';
-
   // Email validation function
   bool _validateEmailFormat(String email) {
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     return emailRegex.hasMatch(email);
   }
 
-  // Check if email exists
-  Future<bool> _checkEmailExists(String email) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://ujprojectiddsi-daakdjchhecydbew.canadacentral-01.azurewebsites.net/api/Auth/CheckEmail'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        return responseData['exists'] ?? false;
-      }
-      return false;
-    } catch (e) {
-      print('Error checking email: $e');
-      return false;
-    }
-  }
-
-  // LogIn API call (still included in case needed later)
-  Future<void> _logInWithEmail() async {
-    final email = _emailController.text.trim();
-
-    try {
-      final response = await http.post(
-        Uri.parse('https://ujprojectiddsi-daakdjchhecydbew.canadacentral-01.azurewebsites.net/api/Auth/LogIn'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          _message = 'Login request successful.';
-        });
-      } else {
-        setState(() {
-          _message = 'Login failed. Please try again.';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _message = 'Error occurred during login.';
-      });
-    }
-  }
-
-  void _submitEmail() async {
+  Future<void> _submitEmail() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -83,37 +32,26 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     final email = _emailController.text.trim();
 
     try {
-      // First check if the email exists in the database
-      final emailExists = await _checkEmailExists(email);
+      // Firebase password reset
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
 
-      if (!emailExists) {
-        setState(() {
-          _isSubmitting = false;
-          _message = 'Email not found. Please create an account.';
-        });
-        return;
+      setState(() {
+        _message = 'Reset email sent! Please check your inbox.';
+      });
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'An error occurred. Please try again.';
+      if (e.code == 'user-not-found') {
+        errorMessage = 'No user found with this email.';
+      } else if (e.code == 'invalid-email') {
+        errorMessage = 'The email address is not valid.';
       }
 
-      // If email exists, proceed with password reset
-      final response = await http.post(
-        Uri.parse(_forgotPasswordUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
-      );
-
-      if (response.statusCode == 200) {
-        // Reset request sent successfully
-        setState(() {
-          _message = 'Reset code sent! Check your email.';
-        });
-      } else {
-        setState(() {
-          _message = 'Something went wrong. Please try again.';
-        });
-      }
+      setState(() {
+        _message = errorMessage;
+      });
     } catch (e) {
       setState(() {
-        _message = 'Failed to connect to the server.';
+        _message = 'Something went wrong. Please try again.';
       });
     } finally {
       setState(() {
@@ -124,25 +62,22 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    const blue = Color(0xFF1F41BB); // Matches the blue in the image
+    const blue = Color(0xFF1F41BB);
 
     return Scaffold(
       body: Stack(
         children: [
-          // Background image
           Positioned.fill(
             child: Image.asset(
               'assets/background.png',
               fit: BoxFit.cover,
             ),
           ),
-          // Light blue overlay
           Positioned.fill(
             child: Container(
               color: Colors.blue.shade50.withOpacity(0.8),
             ),
           ),
-          // Content
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -178,13 +113,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             margin: const EdgeInsets.only(bottom: 16),
                             width: double.infinity,
                             decoration: BoxDecoration(
-                              color: _message.contains('sent') 
-                                  ? Colors.green.shade100 
+                              color: _message.contains('sent')
+                                  ? Colors.green.shade100
                                   : Colors.red.shade100,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: _message.contains('sent') 
-                                    ? Colors.green.shade300 
+                                color: _message.contains('sent')
+                                    ? Colors.green.shade300
                                     : Colors.red.shade300,
                               ),
                             ),
@@ -192,14 +127,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               _message,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: _message.contains('sent') 
-                                    ? Colors.green.shade900 
+                                color: _message.contains('sent')
+                                    ? Colors.green.shade900
                                     : Colors.red.shade900,
                               ),
                             ),
                           ),
 
-                        // Email field
                         Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(30),
@@ -211,9 +145,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
                               labelText: 'Email',
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 18),
                               border: InputBorder.none,
-                              labelStyle: TextStyle(color: Colors.grey.shade600),
+                              labelStyle:
+                                  TextStyle(color: Colors.grey.shade600),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -231,7 +167,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         ),
                         const SizedBox(height: 32),
 
-                        // Submit button
                         SizedBox(
                           width: double.infinity,
                           height: 56,
@@ -246,7 +181,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               disabledBackgroundColor: Colors.blue.shade300,
                             ),
                             child: _isSubmitting
-                                ? const CircularProgressIndicator(color: Colors.white)
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
                                 : const Text(
                                     'Submit',
                                     style: TextStyle(
@@ -259,7 +195,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
                         const SizedBox(height: 30),
 
-                        // Create an account link
                         TextButton(
                           onPressed: () {
                             Navigator.pushReplacementNamed(context, '/register');

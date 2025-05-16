@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "844640842201",
+    "project_id": "iddsi-app",
+    "storage_bucket": "iddsi-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844640842201:android:903d21c590150b6d5be9c8",
+        "android_client_info": {
+          "package_name": "com.example.iddsi_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnZ8kEtU0bhCeYSXO38LS_xzsnJJy5MZA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

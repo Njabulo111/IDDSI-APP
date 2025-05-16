@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -39,52 +40,23 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
-    // Bypassing login request for development
-    await Future.delayed(const Duration(seconds: 1)); // simulate delay
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/home');
-    }
-
-    /*
-    // ORIGINAL LOGIN LOGIC - Temporarily disabled
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
     try {
-      final response = await http.post(
-        Uri.parse('https://ujprojectiddsi-daakdjchhecydbew.canadacentral-01.azurewebsites.net/api/Auth/LogIn'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': email,
-          'password': password,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
-        }
-      } else if (response.statusCode == 401) {
-        setState(() {
-          _errorMessage = 'Incorrect email or password. Please try again.';
-        });
-      } else {
-        final responseData = json.decode(response.body);
-        setState(() {
-          _errorMessage = responseData['message'] ?? 'Login failed. Please try again.';
-        });
-      }
+      await AuthService().signIn(email: email, password: password);
+        Navigator.pushReplacementNamed(context, '/home'); 
     } catch (e) {
       setState(() {
-        _errorMessage = 'Network error. Please try again later.';
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
-    */
   }
 
   void _togglePasswordVisibility() {
@@ -168,7 +140,8 @@ class _LoginPageState extends State<LoginPage> {
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: Colors.red.shade100,
-                            borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                            borderRadius:
+                                BorderRadius.circular(screenWidth * 0.02),
                             border: Border.all(color: Colors.red.shade300),
                           ),
                           child: Text(
@@ -181,8 +154,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(screenWidth * 0.08),
-                          border: Border.all(color: Colors.blue.shade800, width: 2),
+                          borderRadius:
+                              BorderRadius.circular(screenWidth * 0.08),
+                          border:
+                              Border.all(color: Colors.blue.shade800, width: 2),
                           color: Colors.blue.shade50,
                         ),
                         child: TextFormField(
@@ -224,8 +199,10 @@ class _LoginPageState extends State<LoginPage> {
                       SizedBox(height: screenHeight * 0.025),
                       Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(screenWidth * 0.08),
-                          border: Border.all(color: Colors.blue.shade800, width: 2),
+                          borderRadius:
+                              BorderRadius.circular(screenWidth * 0.08),
+                          border:
+                              Border.all(color: Colors.blue.shade800, width: 2),
                           color: Colors.blue.shade50,
                         ),
                         child: TextFormField(
@@ -247,7 +224,9 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: Colors.blue.shade800,
                                 size: screenWidth * 0.06,
                               ),
@@ -290,12 +269,14 @@ class _LoginPageState extends State<LoginPage> {
                             backgroundColor: Colors.blue.shade800,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(screenWidth * 0.08),
+                              borderRadius:
+                                  BorderRadius.circular(screenWidth * 0.08),
                             ),
                             disabledBackgroundColor: Colors.blue.shade300,
                           ),
                           child: _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
                               : Text(
                                   'Sign In',
                                   style: TextStyle(
@@ -307,9 +288,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       SizedBox(height: screenHeight * 0.02),
                       TextButton(
-                        onPressed: () => Navigator.pushNamed(context, '/register'),
+                        onPressed: () =>
+                            Navigator.pushNamed(context, '/register'),
                         child: Text(
-                          "Don't have an account? Sign up",
+                          "Don't have an account?",
                           style: TextStyle(
                             fontSize: regularFontSize,
                             color: Colors.blue.shade800,

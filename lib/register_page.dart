@@ -1,7 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -21,11 +19,6 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  final String _registerUrl =
-      'https://ujprojectiddsi-daakdjchhecydbew.canadacentral-01.azurewebsites.net/api/Auth/Register';
-  final String _checkEmailUrl =
-      'https://ujprojectiddsi-daakdjchhecydbew.canadacentral-01.azurewebsites.net/api/Auth/CheckEmail';
-
   void _togglePasswordVisibility() {
     setState(() {
       _obscurePassword = !_obscurePassword;
@@ -38,33 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  Future<bool> _checkEmailExists(String email) async {
-    try {
-      final response = await http.post(
-        Uri.parse(_checkEmailUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': email}),
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        return responseData['exists'] ?? false;
-      }
-      return false;
-    } catch (error) {
-      print('Error checking email: $error');
-      return false;
-    }
-  }
-
-  void _navigateToLogin(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-    Navigator.pushReplacementNamed(context, '/signin');
-  }
-
-  void _submitForm() async {
+  Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -74,61 +41,51 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final email = _emailController.text.trim();
-      final emailExists = await _checkEmailExists(email);
+      final password = _passwordController.text;
 
-      if (emailExists) {
-        if (mounted) {
-          setState(() => _isLoading = false);
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Account Already Exists'),
-              content: const Text('An account with this email already exists. Would you like to log in instead?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _navigateToLogin('Please login with your existing account');
-                  },
-                  child: const Text('Go to Login'),
-                ),
-              ],
+      // Create user with Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+
+      // Send email verification
+      await userCredential.user?.sendEmailVerification();
+
+      if (mounted) {
+        // Show snackbar to check email
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Account created! Please check your email to verify your account.',
+              textAlign: TextAlign.center,
             ),
-          );
-        }
-        return;
-      }
+            duration: Duration(seconds: 5),
+          ),
+        );
 
-      final response = await http.post(
-        Uri.parse(_registerUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email,
-          'password': _passwordController.text,
-        }),
-      ).timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (mounted) {
-          _navigateToLogin('Account created successfully! Please log in.');
-        }
-      } else {
-        final body = jsonDecode(response.body);
-        setState(() {
-          _errorMessage = body['message'] ?? 'Something went wrong.';
+        // Navigate to sign-in page after a delay
+        Future.delayed(const Duration(seconds: 5), () {
+          Navigator.pushReplacementNamed(context, '/signin');
         });
       }
-    } on TimeoutException {
+    } on FirebaseAuthException catch (e) {
       setState(() {
-        _errorMessage = 'Connection timed out. Please try again later.';
+        switch (e.code) {
+          case 'email-already-in-use':
+            _errorMessage = 'This email is already in use.';
+            break;
+          case 'invalid-email':
+            _errorMessage = 'Invalid email address.';
+            break;
+          case 'weak-password':
+            _errorMessage = 'Password is too weak.';
+            break;
+          default:
+            _errorMessage = e.message ?? 'Registration failed.';
+        }
       });
-    } catch (_) {
+    } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to connect. Please try again later.';
+        _errorMessage = 'An error occurred. Please try again.';
       });
     } finally {
       if (mounted) {
@@ -303,7 +260,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           child: _isLoading
                               ? const CircularProgressIndicator(color: Colors.white)
                               : Text(
-                                  'Register',
+                                  'Sign Up',
                                   style: TextStyle(
                                     fontSize: buttonFontSize,
                                     color: Colors.white,
@@ -325,9 +282,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               color: Colors.black87,
                             ),
                             children: const [
-                              TextSpan(text: 'Already have an account? '),
                               TextSpan(
-                                text: 'Sign In',
+                                text: 'Already have an account?',
                                 style: TextStyle(
                                   color: primaryBlue,
                                   fontWeight: FontWeight.bold,

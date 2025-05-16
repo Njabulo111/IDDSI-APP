@@ -8,7 +8,9 @@ import 'register_page.dart';
 import 'forgot_password_page.dart';
 
 class IDDSIApp extends StatelessWidget {
-  const IDDSIApp({super.key});
+  final bool hasSeenWelcome;
+
+  const IDDSIApp({super.key, required this.hasSeenWelcome});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class IDDSIApp extends StatelessWidget {
           primary: const Color(0xFF1F41BB),
         ),
       ),
-      initialRoute: '/welcome1',
+      initialRoute: hasSeenWelcome ? '/signin' : '/welcome1',
       routes: {
         '/': (context) => const IDDSIHomePage(),
         '/welcome1': (context) => welcome1(
@@ -53,9 +55,10 @@ class IDDSIApp extends StatelessWidget {
             ),
         '/signin': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
-        '/forgotPassword': (context) => const ForgotPasswordPage(), // Updated route name to match usage in sign-in page
+        '/forgotPassword': (context) => const ForgotPasswordPage(),
         '/home': (context) => const IDDSIHomePage(),
       },
     );
   }
 }
+
