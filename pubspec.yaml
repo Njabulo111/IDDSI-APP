@@ -112,3 +112,60 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-
+name: iddsi_app
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  http: ^1.1.0
+  provider: ^6.1.1
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+  intl: ^0.19.0
+  image_picker: ^1.0.7
+  path_provider: ^2.1.2
+  path: ^1.8.3
+  sqflite: ^2.3.2
+  flutter_local_notifications: ^16.3.2
+  timezone: ^0.9.2
+  flutter_localizations:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/iddsi-logo.png
+    - assets/iddsi-logo-white.png
+    - assets/iddsi-logo-black.png
+    - assets/iddsi-logo-blue.png
+    - assets/iddsi-logo-green.png
+    - assets/iddsi-logo-red.png
+    - assets/iddsi-logo-yellow.png
+    - assets/iddsi-logo-orange.png
+    - assets/iddsi-logo-purple.png
+    - assets/iddsi-logo-pink.png
+    - assets/iddsi-logo-brown.png
+    - assets/iddsi-logo-grey.png
+    - assets/iddsi-logo-black-white.png
+    - assets/iddsi-logo-blue-white.png
+    - assets/iddsi-logo-green-white.png
+    - assets/iddsi-logo-red-white.png
+    - assets/iddsi-logo-yellow-white.png
+    - assets/iddsi-logo-orange-white.png
+    - assets/iddsi-logo-purple-white.png
+    - assets/iddsi-logo-pink-white.png
+    - assets/iddsi-logo-brown-white.png
+    - assets/iddsi-logo-grey-white.png
+
